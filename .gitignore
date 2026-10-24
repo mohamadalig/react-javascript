@@ -1,3 +1,4 @@
+
 # Dependencies
 node_modules/
 
@@ -8,9 +9,91 @@ build/
 # Environment variables
 .env
 .env.*
+!.env.example
 
 # Local files
 .DS_Store
 
-# Private SQL file
+# Private SQL files
 supabase/admin-policies.sql
+admin-policies.sql
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Dependencies and package caches
+jspm_packages/
+bower_components/
+web_modules/
+.pnpm-store/
+.npm/
+.yarn-integrity
+
+# Build tools and caches
+lib-cov/
+.grunt/
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.output/
+.vuepress/dist/
+.temp/
+.svelte-kit/
+**/.vitepress/dist/
+**/.vitepress/cache/
+.docusaurus/
+.serverless/
+.fusebox/
+.dynamodb/
+.firebase/
+.turbo/
+.astro/
+build/Release/
+
+# TypeScript and lint caches
+*.tsbuildinfo
+.eslintcache
+.stylelintcache
+
+# Other local files
+.lock-wscript
+.node_repl_history
+*.tgz
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.tern-port
+.vscode-test
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+.vite/
+
+# Environment-specific local files
+.env.local
+.env.*.local
