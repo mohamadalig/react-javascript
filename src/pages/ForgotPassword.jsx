@@ -1,80 +1,81 @@
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
-import { useT } from "../hooks/useT";
 import "../styles/auth.css";
 
 export default function ForgotPassword() {
-  const t = useT();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(null);
-  const [error, setError] = useState(null);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
-    setError(null);
-    setMessage(null);
+    setError("");
+    setMessage("");
 
-    if (!email.trim()) {
-      setError(t("auth.error.emailRequired") || "لطفاً ایمیل خود را وارد کنید");
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail) {
+      setError("لطفاً ایمیل خود را وارد کنید.");
       return;
     }
 
     setLoading(true);
 
     try {
-      const redirectUrl = `${window.location.origin}/react-javascript/reset-password`;
+      const redirectTo =
+        `${window.location.origin}${import.meta.env.BASE_URL}?recovery=1`;
 
       const { error: resetError } =
-        await supabase.auth.resetPasswordForEmail(email.trim(), {
-          redirectTo: redirectUrl,
+        await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+          redirectTo,
         });
 
-      if (resetError) {
-        throw resetError;
-      }
+      if (resetError) throw resetError;
 
       setMessage(
-        t("auth.forgot.success") ||
-          "لینک بازیابی رمز عبور به ایمیل شما ارسال شد. لطفاً صندوق ورودی و پوشه اسپم را بررسی کنید."
+        "اگر این ایمیل در سیستم ثبت شده باشد، لینک بازیابی برای آن ارسال می‌شود. صندوق ورودی و پوشه Spam را بررسی کن."
       );
     } catch (err) {
-      setError(err.message || "خطا در ارسال ایمیل بازیابی");
+      setError(err.message || "ارسال ایمیل بازیابی ناموفق بود.");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h2>{t("auth.forgot.title") || "فراموشی رمز عبور"}</h2>
-
+        <h2>فراموشی رمز عبور</h2>
         <p className="auth-subtitle">
-          {t("auth.forgot.subtitle") ||
-            "ایمیل ثبت‌نامی خود را وارد کنید تا لینک تغییر رمز برای شما ارسال شود."}
+          ایمیل حساب خود را وارد کن تا لینک بازیابی برایت ارسال شود.
         </p>
 
         {error && (
-          <div className="auth-alert auth-alert-error">{error}</div>
+          <div className="auth-alert auth-alert-error" role="alert">
+            {error}
+          </div>
         )}
 
         {message && (
-          <div className="auth-alert auth-alert-success">{message}</div>
+          <div className="auth-alert auth-alert-success" role="status">
+            {message}
+          </div>
         )}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label>{t("auth.email") || "ایمیل"}</label>
-
+            <label htmlFor="recovery-email">آدرس ایمیل</label>
             <input
+              id="recovery-email"
               type="email"
+              autoComplete="email"
+              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="example@gmail.com"
-              required
+              placeholder="name@example.com"
               dir="ltr"
             />
           </div>
@@ -84,16 +85,12 @@ export default function ForgotPassword() {
             className="btn-primary auth-submit"
             disabled={loading}
           >
-            {loading
-              ? "در حال ارسال..."
-              : t("auth.forgot.submit") || "ارسال لینک بازیابی"}
+            {loading ? "در حال ارسال..." : "ارسال لینک بازیابی"}
           </button>
         </form>
 
         <div className="auth-footer-links">
-          <Link to="/login">
-            {t("auth.backToLogin") || "بازگشت به صفحه ورود"}
-          </Link>
+          <Link to="/login">بازگشت به صفحه ورود</Link>
         </div>
       </div>
     </div>

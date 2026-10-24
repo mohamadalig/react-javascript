@@ -1,6 +1,11 @@
 
-import React, { useEffect } from "react";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import {
+  HashRouter,
+  Routes,
+  Route,
+  useNavigate,
+} from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 
 import Header from "./components/Header";
@@ -19,6 +24,20 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
 import { fetchProducts } from "./store/productsSlice";
+
+function RecoveryRedirect() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.has("recovery") || params.has("code")) {
+      navigate("/reset-password", { replace: true });
+    }
+  }, [navigate]);
+
+  return null;
+}
 
 export default function App() {
   const dispatch = useDispatch();
@@ -41,6 +60,8 @@ export default function App() {
 
   return (
     <HashRouter>
+      <RecoveryRedirect />
+
       <div className="app-container">
         <Header />
 
@@ -54,14 +75,8 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route
-              path="/forgot-password"
-              element={<ForgotPassword />}
-            />
-            <Route
-              path="/reset-password"
-              element={<ResetPassword />}
-            />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
           </Routes>
         </main>
 
