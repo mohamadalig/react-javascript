@@ -7,7 +7,7 @@ import LiveChat from "./components/LiveChat";
 import Home from "./pages/Home";
 import ProductDetails from "./pages/ProductDetails";
 import Cart from "./pages/Cart";
-import Checkout from "./pages/Checkout.jsx";د
+import Checkout from "./pages/ChecKout.jsx";
 import PaymentResult from "./pages/PaymentResult";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
