@@ -1,0 +1,117 @@
+/* ===== داشبورد حرفه‌ای ===== */
+.dash-shell { display: grid; grid-template-columns: 200px 1fr; gap: 20px; align-items: start; }
+
+.dash-side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  position: sticky;
+  top: 84px;
+}
+.dash-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  color: inherit;
+  text-align: start;
+}
+.dash-nav:hover { background: rgba(127, 127, 127, 0.12); }
+.dash-nav.active { background: var(--primary); color: #fff; }
+.dash-nav-icon { font-size: 16px; }
+
+.dash-main { min-width: 0; }
+
+/* کارت‌های آمار */
+.dash-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.dash-stat { padding: 18px; text-align: center; }
+.dash-stat .num { font-size: 22px; font-weight: 800; color: var(--primary); margin-bottom: 4px; }
+
+.dash-card { padding: 20px; margin-bottom: 20px; }
+.dash-card h3 { margin: 0 0 14px; font-size: 16px; }
+.dash-two { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.dash-two .dash-card { margin-bottom: 0; }
+
+/* نمودار ستونی ۷ روز */
+.dash-chart { display: flex; align-items: flex-end; gap: 12px; height: 180px; padding-top: 10px; }
+.dash-chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; }
+.dash-chart-col span { font-size: 12px; color: var(--muted); }
+.dash-chart-bar {
+  width: 100%;
+  max-width: 48px;
+  min-height: 4px;
+  margin-top: auto;
+  background: var(--primary);
+  opacity: 0.85;
+  border-radius: 8px 8px 0 0;
+  transition: opacity 0.2s;
+}
+.dash-chart-bar:hover { opacity: 1; }
+
+/* نوار ابزار (جستجو و فیلتر) */
+.dash-toolbar { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.dash-toolbar .input { max-width: 240px; }
+.dash-toolbar select.input { max-width: 170px; }
+
+/* جدول‌ها */
+.dash-table { width: 100%; border-collapse: collapse; }
+.dash-table th, .dash-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  font-size: 14px;
+}
+.dash-table img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; }
+.dash-table .actions { display: flex; gap: 6px; white-space: nowrap; }
+.dash-items { max-width: 260px; font-size: 12px; color: var(--muted); }
+.dash-review-body { max-width: 320px; }
+.dash-status { padding: 4px 8px; font-size: 12px; min-width: 120px; }
+
+/* برچسب وضعیت */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge.ok { background: rgba(34, 197, 94, 0.15); color: #16a34a; }
+.badge.warn { background: rgba(234, 179, 8, 0.18); color: #b45309; }
+.badge.muted { background: rgba(127, 127, 127, 0.15); color: inherit; }
+.badge.st-paid, .badge.st-delivered { background: rgba(34, 197, 94, 0.15); color: #16a34a; }
+.badge.st-pending, .badge.st-shipped { background: rgba(59, 130, 246, 0.15); color: #2563eb; }
+.badge.st-failed, .badge.st-cancelled { background: rgba(239, 68, 68, 0.15); color: #dc2626; }
+
+/* فهرست موجودی کم */
+.dash-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.dash-list li { display: flex; align-items: center; gap: 10px; }
+.dash-list img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; }
+.dash-list-name { flex: 1; font-size: 14px; }
+
+/* فرم محصول */
+.dash-layout { display: grid; grid-template-columns: 340px 1fr; gap: 20px; align-items: start; }
+.product-form { display: flex; flex-direction: column; gap: 10px; padding: 20px; }
+.product-form label { font-size: 13px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+
+@media (max-width: 900px) {
+  .dash-shell { grid-template-columns: 1fr; }
+  .dash-side { position: static; flex-direction: row; flex-wrap: wrap; }
+  .dash-nav { width: auto; }
+  .dash-two { grid-template-columns: 1fr; }
+  .dash-layout { grid-template-columns: 1fr; }
+  .dash-chart { gap: 6px; }
+}

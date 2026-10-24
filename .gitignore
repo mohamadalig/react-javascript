@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment variables
+.env
+.env.*
+
+# Local files
+.DS_Store
+
+# Private SQL file
+supabase/admin-policies.sql
