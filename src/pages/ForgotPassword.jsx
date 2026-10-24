@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
@@ -12,34 +11,46 @@ export default function ForgotPassword() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+
     setError("");
     setMessage("");
 
     const normalizedEmail = email.trim();
 
     if (!normalizedEmail) {
-      setError("لطفاً ایمیل خود را وارد کنید.");
+      setError("لطفاً آدرس ایمیل خود را وارد کنید.");
       return;
     }
 
     setLoading(true);
 
     try {
-      const redirectTo =
-        `${window.location.origin}${import.meta.env.BASE_URL}?recovery=1`;
+      // آدرس برگشت سازگار با GitHub Pages و HashRouter
+      const redirectTo = new URL(
+        import.meta.env.BASE_URL,
+        window.location.origin
+      );
+
+      redirectTo.searchParams.set("recovery", "1");
 
       const { error: resetError } =
         await supabase.auth.resetPasswordForEmail(normalizedEmail, {
-          redirectTo,
+          redirectTo: redirectTo.toString(),
         });
 
-      if (resetError) throw resetError;
+      if (resetError) {
+        throw resetError;
+      }
 
       setMessage(
-        "اگر این ایمیل در سیستم ثبت شده باشد، لینک بازیابی برای آن ارسال می‌شود. صندوق ورودی و پوشه Spam را بررسی کن."
+        "اگر این ایمیل در سیستم ثبت شده باشد، لینک بازیابی برای آن ارسال می‌شود. صندوق ورودی و پوشه Spam را بررسی کنید."
       );
     } catch (err) {
-      setError(err.message || "ارسال ایمیل بازیابی ناموفق بود.");
+      console.error("Password recovery error:", err);
+
+      setError(
+        err.message || "ارسال ایمیل بازیابی ناموفق بود. دوباره تلاش کنید."
+      );
     } finally {
       setLoading(false);
     }
@@ -49,8 +60,9 @@ export default function ForgotPassword() {
     <div className="auth-page">
       <div className="auth-card">
         <h2>فراموشی رمز عبور</h2>
+
         <p className="auth-subtitle">
-          ایمیل حساب خود را وارد کن تا لینک بازیابی برایت ارسال شود.
+          ایمیل حساب خود را وارد کنید تا لینک بازیابی رمز عبور برایتان ارسال شود.
         </p>
 
         {error && (
@@ -68,15 +80,18 @@ export default function ForgotPassword() {
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label htmlFor="recovery-email">آدرس ایمیل</label>
+
             <input
               id="recovery-email"
               type="email"
+              name="email"
               autoComplete="email"
+              placeholder="name@example.com"
+              dir="ltr"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@example.com"
-              dir="ltr"
+              disabled={loading}
             />
           </div>
 
