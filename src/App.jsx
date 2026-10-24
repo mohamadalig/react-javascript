@@ -1,9 +1,12 @@
+
 import React, { useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import LiveChat from "./components/LiveChat";
+
 import Home from "./pages/Home";
 import ProductDetails from "./pages/ProductDetails";
 import Cart from "./pages/Cart";
@@ -14,16 +17,21 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+
 import { fetchProducts } from "./store/productsSlice";
 
 export default function App() {
   const dispatch = useDispatch();
+
   const theme = useSelector((state) => state.ui?.theme || "light");
   const lang = useSelector((state) => state.ui?.lang || "fa");
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
-    document.documentElement.setAttribute("dir", lang === "fa" ? "rtl" : "ltr");
+    document.documentElement.setAttribute(
+      "dir",
+      lang === "fa" ? "rtl" : "ltr"
+    );
     document.documentElement.setAttribute("lang", lang);
   }, [theme, lang]);
 
@@ -32,9 +40,10 @@ export default function App() {
   }, [dispatch]);
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <div className="app-container">
         <Header />
+
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Home />} />
@@ -45,13 +54,20 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route
+              path="/forgot-password"
+              element={<ForgotPassword />}
+            />
+            <Route
+              path="/reset-password"
+              element={<ResetPassword />}
+            />
           </Routes>
         </main>
+
         <Footer />
         <LiveChat />
       </div>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
