@@ -1,4 +1,5 @@
-name: Deploy React Vite to GitHub Pages
+
+name: Deploy React Shop to GitHub Pages
 
 on:
   push:
@@ -29,8 +30,14 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Show Node and npm versions
+        run: |
+          node -v
+          npm -v
+          npm config get registry
+
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm install --no-audit --no-fund --registry=https://registry.npmjs.org/
 
       - name: Build project
         run: npm run build
@@ -55,11 +62,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        
-
-
-              - name: Show Node and npm versions
-        run: |
-          node -v
-          npm -v
-          npm config list
