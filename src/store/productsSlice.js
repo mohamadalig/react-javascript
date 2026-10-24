@@ -1,9 +1,8 @@
-```javascript
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { seedProducts } from "../data/products";
 import { supabase, backendOn } from "../lib/supabase";
 
-// تبدیل رکورد دیتابیس به ساختار برنامه
+// تبدیل رکورد Supabase به ساختار محصول برنامه
 const mapRow = (row) => ({
   id: row.id,
   name: row.name,
@@ -12,32 +11,58 @@ const mapRow = (row) => ({
   oldPrice: row.old_price ?? undefined,
   category: row.category,
   image: row.image,
-  gallery: row.gallery?.length ? row.gallery : [row.image],
+  gallery: Array.isArray(row.gallery) && row.gallery.length > 0
+    ? row.gallery
+    : row.image
+      ? [row.image]
+      : [],
   rating: Number(row.rating ?? 4),
   stock: Number(row.stock ?? 0),
 });
 
-// دریافت محصولات واقعی از دیتابیس
+// ساختار داده برای ذخیره در Supabase
+const mapToRow = (product) => ({
+  name: product.name,
+  description: product.description,
+  price: Number(product.price),
+  old_price: product.oldPrice ?? null,
+  category: product.category,
+  image: product.image,
+  gallery: product.gallery ?? (product.image ? [product.image] : []),
+  rating: Number(product.rating ?? 4),
+  stock: Number(product.stock ?? 0),
+});
+
+// دریافت محصولات
 export const fetchProducts = createAsyncThunk(
   "products/fetch",
   async (_, { rejectWithValue }) => {
-    if (!backendOn) {
-      return { products: seedProducts, source: "seed" };
+    if (!backendOn || !supabase) {
+      return {
+        products: seedProducts,
+        source: "seed",
+      };
     }
 
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .order("id");
+    try {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("id", { ascending: true });
 
-    if (error) {
-      return rejectWithValue(error.message);
+      if (error) {
+        return rejectWithValue(error.message);
+      }
+
+      return {
+        products: (data ?? []).map(mapRow),
+        source: "database",
+      };
+    } catch (error) {
+      return rejectWithValue(
+        error.message || "دریافت محصولات ناموفق بود."
+      );
     }
-
-    return {
-      products: (data ?? []).map(mapRow),
-      source: "database",
-    };
   }
 );
 
@@ -45,29 +70,18 @@ export const fetchProducts = createAsyncThunk(
 export const saveProduct = createAsyncThunk(
   "products/save",
   async (product, { rejectWithValue }) => {
-    if (!backendOn) {
+    if (!backendOn || !supabase) {
       return rejectWithValue(
-        "اتصال به Supabase فعال نیست؛ تغییرات ذخیره نشدند."
+        "اتصال به Supabase فعال نیست؛ محصول ذخیره نشد."
       );
     }
 
-    const row = {
-      name: product.name,
-      description: product.description,
-      price: Number(product.price),
-      old_price: product.oldPrice ?? null,
-      category: product.category,
-      image: product.image,
-      gallery: product.gallery ?? [product.image],
-      rating: Number(product.rating ?? 4),
-      stock: Number(product.stock ?? 0),
-    };
-
     try {
+      const row = mapToRow(product);
       let result;
 
-      if (product.id != null) {
-        // ویرایش محصول موجود
+      if (product.id !== undefined && product.id !== null) {
+        // ویرایش محصول موجود در دیتابیس
         result = await supabase
           .from("products")
           .update(row)
@@ -89,7 +103,7 @@ export const saveProduct = createAsyncThunk(
 
       if (!result.data) {
         return rejectWithValue(
-          "محصول در دیتابیس پیدا نشد یا ذخیره نشد."
+          "محصول در دیتابیس پیدا نشد یا ذخیره نشد. شناسه محصول را بررسی کن."
         );
       }
 
@@ -102,11 +116,11 @@ export const saveProduct = createAsyncThunk(
   }
 );
 
-// حذف واقعی محصول
+// حذف محصول از دیتابیس
 export const removeProduct = createAsyncThunk(
   "products/remove",
   async (id, { rejectWithValue }) => {
-    if (!backendOn) {
+    if (!backendOn || !supabase) {
       return rejectWithValue(
         "اتصال به Supabase فعال نیست؛ محصول حذف نشد."
       );
@@ -123,9 +137,9 @@ export const removeProduct = createAsyncThunk(
         return rejectWithValue(error.message);
       }
 
-      if (!data?.length) {
+      if (!data || data.length === 0) {
         return rejectWithValue(
-          "محصول حذف نشد؛ شناسه یا مجوزهای دیتابیس را بررسی کن."
+          "محصول حذف نشد. شناسه محصول یا مجوزهای دیتابیس را بررسی کن."
         );
       }
 
@@ -138,16 +152,21 @@ export const removeProduct = createAsyncThunk(
   }
 );
 
+// وضعیت اولیه Redux
+const initialState = {
+  list: seedProducts,
+  loading: false,
+  saving: false,
+  deleting: false,
+  error: null,
+  initialized: false,
+  source: "seed",
+};
+
+// ساخت Slice
 const productsSlice = createSlice({
   name: "products",
-
-  initialState: {
-    list: seedProducts,
-    loading: false,
-    saving: false,
-    error: null,
-    initialized: false,
-  },
+  initialState,
 
   reducers: {
     clearProductsError(state) {
@@ -166,9 +185,7 @@ const productsSlice = createSlice({
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false;
         state.initialized = true;
-
-        // حتی اگر دیتابیس خالی باشد، محصولات آزمایشی
-        // دوباره وارد فهرست نمی‌شوند.
+        state.source = action.payload.source;
         state.list = action.payload.products;
       })
 
@@ -180,12 +197,13 @@ const productsSlice = createSlice({
           "دریافت محصولات ناموفق بود.";
       })
 
-      // ذخیره محصول
+      // شروع ذخیره محصول
       .addCase(saveProduct.pending, (state) => {
         state.saving = true;
         state.error = null;
       })
 
+      // ذخیره موفق
       .addCase(saveProduct.fulfilled, (state, action) => {
         state.saving = false;
 
@@ -202,6 +220,7 @@ const productsSlice = createSlice({
         }
       })
 
+      // خطای ذخیره
       .addCase(saveProduct.rejected, (state, action) => {
         state.saving = false;
         state.error =
@@ -210,18 +229,24 @@ const productsSlice = createSlice({
           "ذخیره محصول ناموفق بود.";
       })
 
-      // حذف محصول
+      // شروع حذف
       .addCase(removeProduct.pending, (state) => {
+        state.deleting = true;
         state.error = null;
       })
 
+      // حذف موفق
       .addCase(removeProduct.fulfilled, (state, action) => {
+        state.deleting = false;
+
         state.list = state.list.filter(
           (item) => String(item.id) !== String(action.payload)
         );
       })
 
+      // خطای حذف
       .addCase(removeProduct.rejected, (state, action) => {
+        state.deleting = false;
         state.error =
           action.payload ||
           action.error.message ||
@@ -230,7 +255,7 @@ const productsSlice = createSlice({
   },
 });
 
+// خروجی‌های Slice
 export const { clearProductsError } = productsSlice.actions;
 
 export default productsSlice.reducer;
-```
