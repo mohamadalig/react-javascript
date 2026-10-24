@@ -38,6 +38,8 @@ export default function Dashboard() {
   const [orderStatus, setOrderStatus] = useState("all");
   const [productQuery, setProductQuery] = useState("");
   const [form, setForm] = useState(emptyForm);
+  const [productError, setProductError] = useState("");
+  const [productMessage, setProductMessage] = useState("");
 
   useEffect(() => {
     if (!backendOn) return;
@@ -125,23 +127,50 @@ export default function Dashboard() {
     if (backendOn) await supabase.from("reviews").delete().eq("id", id);
   };
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
+    setProductError("");
+    setProductMessage("");
+
     const product = {
       id: form.id,
       name: { fa: form.nameFa, en: form.nameEn },
       description: { fa: form.descFa, en: form.descEn },
-      price: form.price,
-      stock: form.stock,
-      rating: form.rating,
+      price: Number(form.price),
+      stock: Number(form.stock),
+      rating: Number(form.rating ?? 4),
       category: form.category,
       image: form.image || `https://picsum.photos/seed/${Date.now()}/600/400`,
     };
-    dispatch(saveProduct(product));
-    setForm(emptyForm);
+
+    try {
+      await dispatch(saveProduct(product)).unwrap();
+      setForm(emptyForm);
+      setProductMessage(t("dashboard.saveSuccess") || "محصول با موفقیت ذخیره شد.");
+    } catch (error) {
+      console.error("Saving product failed:", error);
+      setProductError(error?.message || "ذخیره محصول ناموفق بود. اتصال و تنظیمات دیتابیس را بررسی کن.");
+    }
   };
 
-  const edit = (p) =>
+  const handleDeleteProduct = async (id) => {
+    if (!window.confirm("از حذف این محصول مطمئنی؟")) return;
+    setProductError("");
+    setProductMessage("");
+
+    try {
+      await dispatch(removeProduct(id)).unwrap();
+      if (form.id === id) setForm(emptyForm);
+      setProductMessage("محصول با موفقیت حذف شد.");
+    } catch (error) {
+      console.error("Deleting product failed:", error);
+      setProductError(error?.message || "حذف محصول ناموفق بود. اتصال و تنظیمات دیتابیس را بررسی کن.");
+    }
+  };
+
+  const edit = (p) => {
+    setProductError("");
+    setProductMessage("");
     setForm({
       id: p.id,
       nameFa: p.name?.fa || "",
@@ -152,8 +181,9 @@ export default function Dashboard() {
       stock: p.stock,
       category: p.category,
       image: p.image,
-      rating: p.rating,
+      rating: p.rating ?? 4,
     });
+  };
 
   return (
     <div className="container">
@@ -280,6 +310,8 @@ export default function Dashboard() {
             <div className="dash-layout">
               <form className="card product-form" onSubmit={submit}>
                 <h3>{form.id ? t("dashboard.edit") : t("dashboard.addProduct")}</h3>
+                {productError && <div className="empty" role="alert" style={{ color: "#b91c1c", marginBottom: 12 }}>{productError}</div>}
+                {productMessage && <div className="empty" role="status" style={{ color: "#15803d", marginBottom: 12 }}>{productMessage}</div>}
                 <label>
                   {t("dashboard.nameFa")}
                   <input className="input" value={form.nameFa} onChange={(e) => setForm({ ...form, nameFa: e.target.value })} required />
@@ -356,8 +388,8 @@ export default function Dashboard() {
                             <span className={`badge ${(p.stock || 0) <= 5 ? "warn" : "muted"}`}>{p.stock}</span>
                           </td>
                           <td className="actions">
-                            <button className="btn-outline" onClick={() => edit(p)}>{t("dashboard.edit")}</button>
-                            <button className="btn-outline danger" onClick={() => dispatch(removeProduct(p.id))}>
+                            <button type="button" className="btn-outline" onClick={() => edit(p)}>{t("dashboard.edit")}</button>
+                            <button type="button" className="btn-outline danger" onClick={() => handleDeleteProduct(p.id)}>
                               {t("dashboard.delete")}
                             </button>
                           </td>
