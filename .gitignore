@@ -124,7 +124,14 @@ dist
 
 # Stores Visual Studio Code versions used for testing Visual Studio Code extensions
 .vscode-test
-
+node_modules/
+build/
+dist/
+.env
+.env.local
+.env.*.local
+.DS_Store
+supabase/admin-policies.sql
 # pnpm
 .pnpm-store
 
